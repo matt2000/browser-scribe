@@ -15,17 +15,17 @@ A Chrome extension that logs user interactions and page changes for later analys
    - Click events (with element details and selectors)
    - Hover events (on interactive elements only)
    - Keyboard input (keyup events)
-   - Form submissions (with field values, excluding passwords)
+   - Form submissions (with field values, passwords logged as 'PASSWORD')
    - Form field changes
-3. **Network Activity**: XHR and Fetch responses that occur within 5 seconds of user actions
+3. **Network Activity**: XHR and Fetch responses until next user action or 60 seconds (whichever comes first)
 4. **DOM Changes**: New elements added to the page
 
 ### Smart Logging
 
 - Only logs intentional hovers (>500ms on interactive elements)
 - Doesn't log mouse movements that don't result in changes
-- Network requests are only logged if they follow a user action
-- Passwords are never logged
+- Network requests logged until next user action or 60 seconds maximum
+- Password values logged as 'PASSWORD' string (not actual values)
 
 ## Installation
 
@@ -79,5 +79,5 @@ The extension consists of:
 
 - All data is stored locally in Chrome's storage
 - No data is sent to external servers
-- Passwords are explicitly excluded from logging
+- Password field values are logged as 'PASSWORD' string (actual values never stored)
 - Users have full control over when recording starts/stops and can reset logs at any time

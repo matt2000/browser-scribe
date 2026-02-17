@@ -32,13 +32,13 @@ From the problem statement, the extension must:
   - [x] Implemented: Only logs hovers after 500ms on interactive elements
 
 - [x] **Log XHR responses** that arrive after any action
-  - [x] Implemented: Captures XHR responses within 5s of user actions
+  - [x] Implemented: Captures XHR responses until next action or 60s maximum
 
 - [x] **Log new elements** added to the DOM
   - [x] Implemented: MutationObserver tracks DOM additions
 
 - [x] **Log form field values** submitted
-  - [x] Implemented: Captures all form data (excluding passwords)
+  - [x] Implemented: Captures all form data (passwords as 'PASSWORD')
 
 ## 📊 Statistics
 
@@ -82,16 +82,16 @@ User Clicks Export ← Popup ← Retrieved Logs ← Chrome Storage
 | `page_load` | Initial URL and title | On recording start |
 | `click` | All click events | None |
 | `hover` | Mouse hover | >500ms, interactive elements only |
-| `keyup` | Keyboard input | All keys |
-| `submit` | Form submissions | Excludes password fields |
-| `change` | Form field changes | Excludes password fields |
+| `keyup` | Keyboard input | All keys, passwords as 'PASSWORD' |
+| `submit` | Form submissions | Passwords as 'PASSWORD' |
+| `change` | Form field changes | Passwords as 'PASSWORD' |
 | `dom_mutation` | DOM additions | Batched |
-| `xhr_response` | XHR responses | Within 5s of action |
-| `fetch_response` | Fetch responses | Within 5s of action |
+| `xhr_response` | XHR responses | Until next action or 60s |
+| `fetch_response` | Fetch responses | Until next action or 60s |
 
 ## 🔒 Security & Privacy Features
 
-1. **Password Protection**: Passwords never logged (explicitly filtered)
+1. **Password Protection**: Password values logged as 'PASSWORD' (actual values never stored)
 2. **Local Storage**: All data stays in browser
 3. **No External Calls**: No data sent to servers
 4. **User Control**: Full control over recording
@@ -234,13 +234,13 @@ The extension includes a comprehensive test page (`test-page.html`) that allows 
 **Decision**: Only log hovers after 500ms delay on interactive elements
 **Rationale**: Prevents excessive logging of mouse movements while capturing intentional interactions
 
-### 2. Time-Based Network Logging
-**Decision**: Only log XHR/Fetch within 5 seconds of user actions
-**Rationale**: Correlates network activity with user actions without logging background requests
+### 2. Network Logging Window
+**Decision**: Log XHR/Fetch until next user action or 60 seconds maximum
+**Rationale**: Correlates network activity with user actions while allowing time for slower responses
 
-### 3. Password Exclusion
-**Decision**: Never log password field values
-**Rationale**: Privacy and security - sensitive data should never be captured
+### 3. Password Logging
+**Decision**: Log password fields with value 'PASSWORD' instead of actual values
+**Rationale**: Maintains field structure for replay while protecting sensitive data
 
 ### 4. Dual Selector Generation
 **Decision**: Generate both XPath and CSS selectors
