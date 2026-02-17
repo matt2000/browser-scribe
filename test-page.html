@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser Scribe Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #2196F3;
+    }
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    input, select, textarea {
+      margin: 5px;
+      padding: 5px;
+    }
+    #dynamic-content {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Browser Scribe Test Page</h1>
+  <p>Use this page to test the Browser Scribe extension functionality.</p>
+
+  <div class="test-section">
+    <h2>Click Events</h2>
+    <button id="test-btn-1">Click Me</button>
+    <button id="test-btn-2">Another Button</button>
+    <a href="#" id="test-link">Test Link</a>
+  </div>
+
+  <div class="test-section">
+    <h2>Hover Events</h2>
+    <button id="hover-btn">Hover Over Me</button>
+    <a href="#" id="hover-link">Hover Link</a>
+  </div>
+
+  <div class="test-section">
+    <h2>Keyboard Input</h2>
+    <input type="text" id="text-input" placeholder="Type something...">
+    <textarea id="textarea" rows="3" placeholder="Type in textarea..."></textarea>
+  </div>
+
+  <div class="test-section">
+    <h2>Form Submission</h2>
+    <form id="test-form">
+      <div>
+        <label>Name: <input type="text" name="name" id="name-input"></label>
+      </div>
+      <div>
+        <label>Email: <input type="email" name="email" id="email-input"></label>
+      </div>
+      <div>
+        <label>Password: <input type="password" name="password" id="password-input"></label>
+      </div>
+      <div>
+        <label>Country:
+          <select name="country" id="country-select">
+            <option value="us">United States</option>
+            <option value="uk">United Kingdom</option>
+            <option value="ca">Canada</option>
+          </select>
+        </label>
+      </div>
+      <div>
+        <label><input type="checkbox" name="subscribe" value="yes"> Subscribe to newsletter</label>
+      </div>
+      <button type="submit">Submit Form</button>
+    </form>
+  </div>
+
+  <div class="test-section">
+    <h2>Dynamic Content (DOM Mutations)</h2>
+    <button id="add-element-btn">Add Element</button>
+    <button id="remove-element-btn">Remove Element</button>
+    <div id="dynamic-content"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>XHR/Fetch Requests</h2>
+    <button id="xhr-btn">Trigger XHR</button>
+    <button id="fetch-btn">Trigger Fetch</button>
+    <div id="network-response"></div>
+  </div>
+
+  <script>
+    // Click event handlers
+    document.getElementById('test-btn-1').addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('Button 1 clicked!');
+    });
+
+    document.getElementById('test-btn-2').addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('Button 2 clicked!');
+    });
+
+    document.getElementById('test-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('Link clicked!');
+    });
+
+    // Form submission
+    document.getElementById('test-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Form submitted! Check the logs.');
+    });
+
+    // Dynamic content
+    let elementCount = 0;
+    document.getElementById('add-element-btn').addEventListener('click', function() {
+      elementCount++;
+      const newElement = document.createElement('div');
+      newElement.className = 'dynamic-item';
+      newElement.textContent = `Dynamic element ${elementCount}`;
+      document.getElementById('dynamic-content').appendChild(newElement);
+    });
+
+    document.getElementById('remove-element-btn').addEventListener('click', function() {
+      const container = document.getElementById('dynamic-content');
+      if (container.lastChild) {
+        container.removeChild(container.lastChild);
+      }
+    });
+
+    // XHR request
+    document.getElementById('xhr-btn').addEventListener('click', function() {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts/1');
+      xhr.onload = function() {
+        document.getElementById('network-response').textContent = 'XHR Response: ' + xhr.responseText.substring(0, 100) + '...';
+      };
+      xhr.send();
+    });
+
+    // Fetch request
+    document.getElementById('fetch-btn').addEventListener('click', function() {
+      fetch('https://jsonplaceholder.typicode.com/users/1')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('network-response').textContent = 'Fetch Response: ' + JSON.stringify(data).substring(0, 100) + '...';
+        });
+    });
+  </script>
+</body>
+</html>
