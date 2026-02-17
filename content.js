@@ -1,6 +1,5 @@
 // Global state
 let isRecording = false;
-let pendingXHRs = new Set();
 let lastActionTimestamp = null;
 
 // Initialize
