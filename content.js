@@ -1,6 +1,7 @@
 // Global state
 let isRecording = false;
 let lastActionTimestamp = null;
+let networkLoggingWindowEnd = null;
 
 // Initialize
 chrome.storage.local.get(['isRecording'], function(result) {
@@ -42,6 +43,10 @@ function startRecording() {
 }
 
 function stopRecording() {
+  // Clear network logging window
+  lastActionTimestamp = null;
+  networkLoggingWindowEnd = null;
+  
   // Detach event listeners
   detachEventListeners();
   
@@ -51,7 +56,21 @@ function stopRecording() {
 
 function logEvent(data) {
   if (isRecording) {
-    lastActionTimestamp = Date.now();
+    const now = Date.now();
+    lastActionTimestamp = now;
+    // Set network logging window to 60 seconds from now
+    networkLoggingWindowEnd = now + 60000;
+    chrome.runtime.sendMessage({
+      action: 'log',
+      url: window.location.href,
+      data: data
+    });
+  }
+}
+
+// Log network events without resetting the logging window
+function logNetworkEvent(data) {
+  if (isRecording) {
     chrome.runtime.sendMessage({
       action: 'log',
       url: window.location.href,
@@ -136,7 +155,7 @@ function handleKeyup(e) {
     elementId: element.id,
     elementClass: element.className,
     elementName: element.name,
-    elementValue: element.value,
+    elementValue: element.type === 'password' ? 'PASSWORD' : element.value,
     xpath: getXPath(element),
     selector: getSelector(element)
   });
@@ -153,7 +172,9 @@ function handleSubmit(e) {
     if (element.name) {
       if (element.type === 'checkbox' || element.type === 'radio') {
         formData[element.name] = element.checked;
-      } else if (element.type !== 'password') { // Don't log passwords
+      } else if (element.type === 'password') {
+        formData[element.name] = 'PASSWORD';
+      } else {
         formData[element.name] = element.value;
       }
     }
@@ -182,7 +203,7 @@ function handleChange(e) {
       elementId: element.id,
       elementClass: element.className,
       elementName: element.name,
-      elementValue: element.type === 'password' ? '[HIDDEN]' : element.value,
+      elementValue: element.type === 'password' ? 'PASSWORD' : element.value,
       xpath: getXPath(element),
       selector: getSelector(element)
     });
@@ -255,9 +276,10 @@ function interceptNetworkRequests() {
     const xhrId = Math.random().toString(36).substring(7);
     
     xhr.addEventListener('load', function() {
-      // Only log if this happened after a user action
-      if (lastActionTimestamp && (Date.now() - lastActionTimestamp) < 5000) {
-        logEvent({
+      const now = Date.now();
+      // Log if recording is active, there was a user action, and we're within the window
+      if (isRecording && lastActionTimestamp && now < networkLoggingWindowEnd) {
+        logNetworkEvent({
           type: 'xhr_response',
           method: xhr._method,
           url: xhr._url,
@@ -280,10 +302,11 @@ function interceptNetworkRequests() {
     const options = args[1] || {};
     
     return originalFetch.apply(this, arguments).then(function(response) {
-      // Only log if this happened after a user action
-      if (lastActionTimestamp && (Date.now() - lastActionTimestamp) < 5000) {
+      const now = Date.now();
+      // Log if recording is active, there was a user action, and we're within the window
+      if (isRecording && lastActionTimestamp && now < networkLoggingWindowEnd) {
         response.clone().text().then(function(text) {
-          logEvent({
+          logNetworkEvent({
             type: 'fetch_response',
             method: options.method || 'GET',
             url: typeof url === 'string' ? url : url.url,
