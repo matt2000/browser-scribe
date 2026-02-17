@@ -1,0 +1,2 @@
+# browser-scribe
+Chrome plugin
