@@ -1,3 +1,6 @@
+// Constants
+const NETWORK_LOGGING_WINDOW_MS = 60000; // 60 seconds
+
 // Global state
 let isRecording = false;
 let lastActionTimestamp = null;
@@ -58,8 +61,8 @@ function logEvent(data) {
   if (isRecording) {
     const now = Date.now();
     lastActionTimestamp = now;
-    // Set network logging window to 60 seconds from now
-    networkLoggingWindowEnd = now + 60000;
+    // Set network logging window from now
+    networkLoggingWindowEnd = now + NETWORK_LOGGING_WINDOW_MS;
     chrome.runtime.sendMessage({
       action: 'log',
       url: window.location.href,
